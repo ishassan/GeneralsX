@@ -926,8 +926,7 @@ void WaterRenderObjClass::ReAcquireResources()
 
 	if (W3DShaderManager::getChipset() >= DC_GENERIC_PIXEL_SHADER_1_1)
 	{
-		// GeneralsX @bugfix BenderAI 13/02/2026 Runtime shader compilation Windows-only (stubbed on Linux)
-#ifdef _WIN32
+		// GeneralsX @bugfix ishassan 05/10/2026 Runtime shader assembly works on all platforms (CompatLib d3dx8_shader_asm.cpp)
 		// GeneralsX @bugfix BenderAI 13/02/2026 LPD3DXBUFFER instead of ID3DXBuffer for compat
 		LPD3DXBUFFER compiledShader;
 		const char *shader =
@@ -974,7 +973,6 @@ void WaterRenderObjClass::ReAcquireResources()
 			hr = 	DX8Wrapper::_Get_D3D_Device8()->CreatePixelShader((DWORD*)compiledShader->GetBufferPointer(), &m_trapezoidWaterPixelShader);
 			compiledShader->Release();
 		}
-#endif // _WIN32 - Runtime shader compilation
 	}
 
 	//W3D Invalidate textures after losing the device and since we peek at the textures directly, it won't
