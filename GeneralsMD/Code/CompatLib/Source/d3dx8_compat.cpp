@@ -482,19 +482,7 @@ D3DXCreateVolumeTexture(
 	return D3DERR_INVALIDCALL;
 }
 
-HRESULT WINAPI
-D3DXAssembleShader(
-	LPCVOID pSrcData,
-	UINT SrcDataLen,
-	DWORD Flags,
-	LPD3DXBUFFER *ppConstants,
-	LPD3DXBUFFER *ppCompiledShader,
-	LPD3DXBUFFER *ppCompilationErrors)
-{
-	// Called to create water shader amongst other things
-	// Code seems to be handle assembly failing
-	return D3DERR_INVALIDCALL;
-}
+// GeneralsX @bugfix ishassan 05/10/2026 D3DXAssembleShader is in d3dx8_shader_asm.cpp.
 
 HRESULT WINAPI
 D3DXAssembleShaderFromFileA(

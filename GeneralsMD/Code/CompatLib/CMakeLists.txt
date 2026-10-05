@@ -7,6 +7,7 @@ if((WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8) OR APPLE OR (UNIX AND NOT APPLE))
 list(APPEND SOURCE_D3DX_COMPAT
     d3dx8_compat.cpp
     d3dx8math.cpp
+    d3dx8_shader_asm.cpp
 )
 
 list(TRANSFORM SOURCE_D3DX_COMPAT PREPEND "Source/")

@@ -158,3 +158,16 @@ UINT WINAPI D3DXGetFVFVertexSize(DWORD FVF);
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+// GeneralsX @bugfix ishassan 05/10/2026 Result buffer of D3DXAssembleShader (the part of ID3DXBuffer the game uses).
+struct D3DXBUFFER
+{
+	LPVOID GetBufferPointer() { return m_data; }
+	DWORD GetBufferSize() { return m_size; }
+	ULONG Release();
+
+	BYTE *m_data;
+	DWORD m_size;
+};
+#endif
