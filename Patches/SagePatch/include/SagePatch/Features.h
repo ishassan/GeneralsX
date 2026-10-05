@@ -16,5 +16,6 @@ void takeScreenshot(SDL_Window* window);
 void toggleCursorLock(SDL_Window* window);
 void adjustBrightness(int delta);
 void moveWindow(SDL_Window* window, WindowPosition where);
+void toggleFullscreen(SDL_Window* window);
 
 }

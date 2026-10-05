@@ -459,7 +459,15 @@ if [[ -d "${CNC_GENERALS_ZH_PATH}" ]]; then
     # defaults in the user data directory on first run.
 fi
 
-"${BIN_DIR}/GeneralsXZH" "$@" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
+# GeneralsX @feature ishassan 05/10/2026 Start in a window unless -win or -fullscreen is given: in full
+# screen the game often skips the intro movie (issue #354). Cmd+Enter (SagePatch) switches to full screen.
+GAME_ARGS=("$@")
+case " $* " in
+    *" -win "*|*" -fullscreen "*) ;;
+    *) GAME_ARGS=(-win "$@") ;;
+esac
+
+"${BIN_DIR}/GeneralsXZH" "${GAME_ARGS[@]}" 2>&1 | grep --line-buffered -v "Unimplemented render state D3DRS_PATCHSEGMENTS" | grep --line-buffered -v "No accelerated colorspace conversion"
 exit ${PIPESTATUS[0]}
 WRAPPER
 chmod +x "${MACOS_DIR}/run.sh"

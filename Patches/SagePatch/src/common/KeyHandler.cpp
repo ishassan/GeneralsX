@@ -34,6 +34,13 @@ bool handleKeyDown(const SDL_KeyboardEvent& ev) {
             if (modifier) { adjustBrightness(-8); return true; }
             break;
 
+        // GeneralsX @feature ishassan 05/10/2026 Cmd+Enter or Option+Enter (Ctrl+Enter or Alt+Enter on
+        // Linux) switches between full screen and a window, as in our other native ports.
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER:
+            if (modifier != alt) { toggleFullscreen(window); return true; }
+            break;
+
         case SDLK_1:
             if (modifier && alt) { moveWindow(window, WindowPosition::Center); return true; }
             break;

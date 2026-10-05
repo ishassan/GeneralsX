@@ -56,4 +56,16 @@ void moveWindow(SDL_Window* window, WindowPosition where) {
     SAGEPATCH_LOG("Window position: %s (%d,%d)", name, x, y);
 }
 
+// GeneralsX @feature ishassan 05/10/2026 Switch between full screen (desktop full screen) and a window.
+void toggleFullscreen(SDL_Window* window) {
+    if (!window) return;
+
+    const bool fullscreen = (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
+    if (!SDL_SetWindowFullscreen(window, !fullscreen)) {
+        SAGEPATCH_LOG("Fullscreen: SDL_SetWindowFullscreen failed: %s", SDL_GetError());
+        return;
+    }
+    SAGEPATCH_LOG("Fullscreen: %s", fullscreen ? "window" : "full screen");
+}
+
 }
