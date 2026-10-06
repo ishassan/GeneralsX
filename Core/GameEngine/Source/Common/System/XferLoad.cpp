@@ -41,6 +41,7 @@ XferLoad::XferLoad()
 
 	m_xferMode = XFER_LOAD;
 	m_fileFP = nullptr;
+	m_unicodeFormat = UNICODE_FORMAT_UNKNOWN;
 
 }
 
@@ -78,6 +79,9 @@ void XferLoad::open( AsciiString identifier )
 
 	// call base class
 	Xfer::open( identifier );
+
+	// the format of the Unicode strings is found again for each file
+	m_unicodeFormat = UNICODE_FORMAT_UNKNOWN;
 
 	// open the file
 	m_fileFP = fopen( identifier.str(), "rb" );
@@ -228,9 +232,62 @@ void XferLoad::xferUnicodeString( UnicodeString *unicodeStringData )
 	const Int MAX_XFER_LOAD_STRING_BUFFER = 1024;
 	static WideChar buffer[ MAX_XFER_LOAD_STRING_BUFFER ];
 
-	if( len > 0 )
-		xferUser( buffer, sizeof( WideChar ) * len );
-	buffer[ len ] = 0;  // terminate
+	if( len > 0 && sizeof( WideChar ) != 2 && m_unicodeFormat == UNICODE_FORMAT_UNKNOWN )
+	{
+
+		// Find the format from the first string that has characters. In the 4-byte format, the
+		// bytes 2 and 3 of the data are the upper half of the first character, so they are zero.
+		// In the UTF-16 format, they are the second character (never zero), or, for a string of
+		// one character, the first bytes of the next item in the file (the length of the map
+		// label, never zero).
+		unsigned char probe[ 4 ] = { 0, 0, 0, 0 };
+		long position = ftell( m_fileFP );
+		size_t probeSize = fread( probe, 1, sizeof( probe ), m_fileFP );
+		if( position < 0 || fseek( m_fileFP, position, SEEK_SET ) != 0 )
+		{
+
+			DEBUG_CRASH(( "XferLoad - Error reading from file '%s'", m_identifier.str() ));
+			throw XFER_READ_ERROR;
+
+		}
+		if( probeSize == sizeof( probe ) && (probe[ 2 ] != 0 || probe[ 3 ] != 0) )
+			m_unicodeFormat = UNICODE_FORMAT_UTF16;
+		else
+			m_unicodeFormat = UNICODE_FORMAT_NATIVE;
+
+	}
+
+	if( len > 0 && m_unicodeFormat == UNICODE_FORMAT_UTF16 )
+	{
+
+		// the length counts UTF-16 code units, a pair of surrogates makes one character
+		UnsignedShort units[ 256 ];
+		xferUser( units, sizeof( UnsignedShort ) * len );
+		Int count = 0;
+		for( Int i = 0; i < len; ++i )
+		{
+
+			UnsignedInt character = units[ i ];
+			if( character >= 0xD800 && character <= 0xDBFF && i + 1 < len &&
+					units[ i + 1 ] >= 0xDC00 && units[ i + 1 ] <= 0xDFFF )
+			{
+				character = 0x10000 + ((character - 0xD800) << 10) + (units[ i + 1 ] - 0xDC00);
+				++i;
+			}
+			buffer[ count++ ] = (WideChar)character;
+
+		}
+		buffer[ count ] = 0;  // terminate
+
+	}
+	else
+	{
+
+		if( len > 0 )
+			xferUser( buffer, sizeof( WideChar ) * len );
+		buffer[ len ] = 0;  // terminate
+
+	}
 
 	// save into unicode string
 	unicodeStringData->set( buffer );
