@@ -61,6 +61,17 @@ protected:
 
 	virtual void xferImplementation( void *data, Int dataSize ) override;		///< the xfer implementation
 
+	// How the Unicode strings of this file are stored. Retail saves (Windows, 2-byte wchar_t) store
+	// UTF-16 code units. Saves from ports where wchar_t has 4 bytes (macOS, Linux) store one
+	// 4-byte character for each character. The format is found at the first Unicode string.
+	enum UnicodeFormat
+	{
+		UNICODE_FORMAT_UNKNOWN,
+		UNICODE_FORMAT_NATIVE,		///< sizeof( WideChar ) bytes for each character
+		UNICODE_FORMAT_UTF16			///< 2 bytes for each UTF-16 code unit
+	};
+
 	FILE * m_fileFP;																					///< pointer to file
+	UnicodeFormat m_unicodeFormat;														///< format of the Unicode strings in the file
 
 };
