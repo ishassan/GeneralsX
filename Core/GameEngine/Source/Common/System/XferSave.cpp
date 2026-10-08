@@ -326,13 +326,57 @@ void XferSave::xferUnicodeString( UnicodeString *unicodeStringData )
 
 	}
 
+	if( sizeof( WideChar ) == 2 )
+	{
+
+		// save length of string to follow
+		UnsignedByte len = unicodeStringData->getLength();
+		xferUnsignedByte( &len );
+
+		// save string data
+		if( len > 0 )
+			xferUser( (void *)unicodeStringData->str(), sizeof( WideChar ) * len );
+
+		return;
+
+	}
+
+	// WideChar has 4 bytes here (macOS, Linux). Save UTF-16 code units, as the retail game does
+	// on Windows, so that the retail game can load the file too. The length counts code units
+	// (a character above 0xFFFF is a pair of surrogates). XferLoad reads both formats.
+	UnsignedShort units[ 255 ];
+	Int count = 0;
+	const WideChar *text = unicodeStringData->str();
+	for( Int i = 0; i < unicodeStringData->getLength(); ++i )
+	{
+
+		UnsignedInt character = (UnsignedInt)text[ i ];
+		Int needed = (character > 0xFFFF) ? 2 : 1;
+		if( count + needed > 255 )
+		{
+
+			DEBUG_CRASH(( "XferSave cannot save this unicode string because it's too long.  Change the size of the length header (but be sure to preserve save file compatability" ));
+			throw XFER_STRING_ERROR;
+
+		}
+		if( needed == 2 )
+		{
+			character -= 0x10000;
+			units[ count++ ] = (UnsignedShort)(0xD800 + (character >> 10));
+			units[ count++ ] = (UnsignedShort)(0xDC00 + (character & 0x3FF));
+		}
+		else
+			units[ count++ ] = (UnsignedShort)character;
+
+	}
+
 	// save length of string to follow
-	UnsignedByte len = unicodeStringData->getLength();
+	UnsignedByte len = (UnsignedByte)count;
 	xferUnsignedByte( &len );
 
 	// save string data
 	if( len > 0 )
-		xferUser( (void *)unicodeStringData->str(), sizeof( WideChar ) * len );
+		xferUser( units, sizeof( UnsignedShort ) * len );
 
 }
 
