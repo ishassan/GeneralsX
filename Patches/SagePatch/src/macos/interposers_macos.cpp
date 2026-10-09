@@ -16,6 +16,7 @@ namespace sagepatch {
 extern bool handleKeyDown(const SDL_KeyboardEvent& ev);
 
 static bool sage_SDL_PollEvent(SDL_Event* event) {
+    removeQuitKey();
     while (SDL_PollEvent(event)) {
         if (event->type == SDL_EVENT_KEY_DOWN) {
             if (handleKeyDown(event->key)) {

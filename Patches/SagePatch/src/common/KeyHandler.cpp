@@ -5,6 +5,11 @@
 namespace sagepatch {
 
 bool handleKeyDown(const SDL_KeyboardEvent& ev) {
+#ifdef __APPLE__
+    // GeneralsX @feature ishassan 09/10/2026 Cmd+Q does nothing, held down too: it is
+    // next to Cmd+1 and easy to press by mistake (see QuitKey_macos.cpp).
+    if (ev.key == SDLK_Q && (ev.mod & SDL_KMOD_GUI)) return true;
+#endif
     if (ev.repeat) return false;
 
     SDL_Window* window = SDL_GetWindowFromID(ev.windowID);

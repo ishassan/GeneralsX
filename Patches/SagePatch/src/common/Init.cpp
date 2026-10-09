@@ -30,6 +30,9 @@ void init() {
     SAGEPATCH_LOG("  Ctrl+PageUp/Dn  brightness +/-");
     SAGEPATCH_LOG("  Ctrl+1..5       window position (center / TL / TR / BL / BR)");
     SAGEPATCH_LOG("  Cmd+Enter       full screen / window");
+#ifdef __APPLE__
+    SAGEPATCH_LOG("  Cmd+Q           does nothing (quit from the menu)");
+#endif
 }
 
 void shutdown() {}

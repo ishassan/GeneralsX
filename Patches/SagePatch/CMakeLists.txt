@@ -24,6 +24,7 @@ if(APPLE)
         src/macos/interposers_macos.cpp
         src/macos/Screenshot_macos.cpp
         src/macos/Brightness_macos.cpp
+        src/macos/QuitKey_macos.cpp
     )
 elseif(UNIX AND NOT APPLE)
     list(APPEND SAGE_PATCH_SOURCES
@@ -64,6 +65,7 @@ if(APPLE)
         "-framework CoreGraphics"
         "-framework ApplicationServices"
         "-framework Foundation"
+        "-lobjc"
     )
 elseif(UNIX)
     target_link_libraries(sage_patch PRIVATE
