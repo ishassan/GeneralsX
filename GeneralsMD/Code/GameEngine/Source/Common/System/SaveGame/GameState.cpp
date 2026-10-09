@@ -1758,16 +1758,10 @@ void GameState::xfer( Xfer *xfer )
 		saveGameInfo->mapLabel = dict->getAsciiString( TheKey_mapName, &exists );
 
 	// if no label was found, we'll use the map name (just filename, no directory info)
+	// GeneralsX @bugfix ishassan 09/10/2026 Also split on '/', so macOS and Linux saves do not store the full map path.
 	if (exists == FALSE || saveGameInfo->mapLabel == AsciiString::TheEmptyString)
 	{
-		const char* p = TheGlobalData->m_mapName.reverseFind('\\');
-		if (p == nullptr)
-			saveGameInfo->mapLabel = TheGlobalData->m_mapName;
-		else
-		{
-			p++;  // skip the '\' we're on
-			saveGameInfo->mapLabel.set(p);
-		}
+		saveGameInfo->mapLabel = getMapLeafName(TheGlobalData->m_mapName);
 	}
 
 	// xfer map label

@@ -595,6 +595,16 @@ void W3DGhostObject::crc( Xfer *xfer )
 }
 
 // ------------------------------------------------------------------------------------------------
+// GeneralsX @bugfix ishassan 09/10/2026 Save the snapshots of the local player only, as the retail game does.
+// With the player observer, snapshots exist for all players. The retail game (1.04) loads them,
+// but frees only those of the local player, and its next load of any save then fails.
+// ------------------------------------------------------------------------------------------------
+static Bool xferSnapshotsOfPlayer( Xfer *xfer, Int playerIndex )
+{
+	return xfer->getXferMode() != XFER_SAVE || playerIndex == TheGhostObjectManager->getLocalPlayerIndex();
+}
+
+// ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
 	* 1: Initial version */
@@ -640,7 +650,7 @@ void W3DGhostObject::xfer( Xfer *xfer )
 	{
 		// count the snapshots at this index
 		snapshotCount = 0;
-		W3DRenderObjectSnapshot *objectSnapshot = m_parentSnapshots[ i ];
+		W3DRenderObjectSnapshot *objectSnapshot = xferSnapshotsOfPlayer( xfer, i ) ? m_parentSnapshots[ i ] : nullptr;
 		while( objectSnapshot )
 		{
 			// increment count
@@ -657,7 +667,7 @@ void W3DGhostObject::xfer( Xfer *xfer )
 		// sanity, this catches when we read from the file a count of zero, but our data
 		// structure already has something allocated in this snapshot index
 		//
-		if( snapshotCount == 0 && m_parentSnapshots[ i ] != nullptr )
+		if( xfer->getXferMode() == XFER_LOAD && snapshotCount == 0 && m_parentSnapshots[ i ] != nullptr )
 		{
 			DEBUG_CRASH(( "W3DGhostObject::xfer - m_parentSnapshots[ %d ] has data present but the count from the xfer stream is empty", i ));
 			throw INI_INVALID_DATA;
@@ -671,7 +681,7 @@ void W3DGhostObject::xfer( Xfer *xfer )
 		if( xfer->getXferMode() == XFER_SAVE )
 		{
 			// iterate through list
-			objectSnapshot = m_parentSnapshots[ i ];
+			objectSnapshot = xferSnapshotsOfPlayer( xfer, i ) ? m_parentSnapshots[ i ] : nullptr;
 			while( objectSnapshot )
 			{
 				// write name from render object
@@ -733,7 +743,7 @@ void W3DGhostObject::xfer( Xfer *xfer )
 	UnsignedByte shroudednessCount = 0;
 	UnsignedByte playerIndex;
 	for( playerIndex = 0; playerIndex < MAX_PLAYER_COUNT; ++playerIndex )
-		if( m_parentSnapshots[ playerIndex ] )
+		if( m_parentSnapshots[ playerIndex ] && xferSnapshotsOfPlayer( xfer, playerIndex ) )
 			shroudednessCount++;
 	xfer->xferUnsignedByte( &shroudednessCount );
 
@@ -745,7 +755,7 @@ void W3DGhostObject::xfer( Xfer *xfer )
 		for( playerIndex = 0; playerIndex < MAX_PLAYER_COUNT; ++playerIndex )
 		{
 			// is this a location with any info
-			if( m_parentSnapshots[ playerIndex ] )
+			if( m_parentSnapshots[ playerIndex ] && xferSnapshotsOfPlayer( xfer, playerIndex ) )
 			{
 				// write this index
 				xfer->xferUnsignedByte( &playerIndex );
